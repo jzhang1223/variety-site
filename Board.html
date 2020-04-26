@@ -4,8 +4,6 @@
     <title>Game Board</title>
     <script type="text/javascript">
     function draw() {
-
-      if (true) {
         var canvas = document.getElementById("board");
         var context = canvas.getContext("2d");
         canvas.width = window.innerWidth;
@@ -27,9 +25,7 @@
             context.fillRect(square_size*i, square_size*j, square_size, square_size);
           }
         }
-      }
     }
-
 
     </script>
     <style type="text/css">
@@ -47,7 +43,4 @@
     <canvas id="board"></canvas>
 
   </body>
-
-
-
 </html>
