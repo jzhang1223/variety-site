@@ -3,15 +3,60 @@
     <meta charset="utf-8"/>
     <title>Jump!</title>
     <script type="text/javascript">
+
+    var blocks = []
+
     function draw() {
         var canvas = document.getElementById("game");
         var context = canvas.getContext("2d");
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
-        let size = canvas.height / 10
         context.fillStyle = "rgb(0,0,0)";
-        context.fillRect(size, canvas.height - size, size, size);
+        context.fillRect(get_size(), canvas.height - get_size(), get_size(), get_size());
+
+        window.requestAnimationFrame(ontick);
+    }
+
+    function ontick() {
+      var canvas = document.getElementById("game");
+      var context = canvas.getContext("2d");
+
+      context.clearRect(0, 0, canvas.width, canvas.height);
+
+      draw_block(make_block(get_size()));
+      
+      if(blocks.length === 0) {
+        blocks.push(make_block(canvas.width));
+      }
+
+      blocks.forEach(block => draw_block(block));
+
+      var new_blocks = []
+      blocks.forEach(block => {
+        if (block.x + get_size() > 0) {
+          new_blocks.push(make_block(block.x - 1));
+        }
+      });
+      blocks = new_blocks;
+
+      window.requestAnimationFrame(ontick);
+    }
+
+    function draw_block(block) {
+      var context = document.getElementById("game").getContext("2d");
+      console.log(block.x);
+      context.fillRect(block.x, block.y, block.width, block.height);
+    }
+
+    function make_block(x) {
+      var canvas = document.getElementById("game");
+      return {x: x, y: canvas.height - get_size(), width: get_size(), height: get_size()};
+    }
+
+    function get_size() {
+      var canvas = document.getElementById("game");
+      return canvas.height / 10;
     }
 
     </script>
