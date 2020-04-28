@@ -7,11 +7,12 @@
     var player_block = {};
     var blocks = [];
     
-    var pause = false;
+    var pause = true;
 
     function draw() {
         var canvas = document.getElementById("game");
-        canvas.addEventListener("click", (e) => {pause = !pause; if(!pause) { ontick()}}, true);
+        // document.addEventListener("click", (e) => {pause = !pause; if(!pause) { ontick() }});
+        document.addEventListener("keydown", handle_key);
         var context = canvas.getContext("2d");
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
@@ -69,7 +70,27 @@
     }
 
     function jump() {
+      let old_block = player_block;
+      player_block = {x: old_block.x, y: old_block.y - 1, width: old_block.width, height: old_block.height};
+    }
 
+    function handle_key(event) {
+      let key = event.key;
+      switch (key) {
+        case " ":
+          pause = !pause;
+          if(!pause) {
+            ontick();
+          }
+          break;
+
+        case "w":
+          jump();
+          break;
+
+        default:
+          console.log(key);
+      }
     }
 
     </script>
