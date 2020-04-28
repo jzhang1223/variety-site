@@ -4,16 +4,21 @@
     <title>Jump!</title>
     <script type="text/javascript">
 
-    var blocks = []
+    var player_block = {};
+    var blocks = [];
+    
+    var pause = false;
 
     function draw() {
         var canvas = document.getElementById("game");
+        canvas.addEventListener("click", (e) => {pause = !pause; if(!pause) { ontick()}}, true);
         var context = canvas.getContext("2d");
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
+        player_block = {x: get_size(), y: canvas.height - get_size(), width: get_size(), height: get_size()};
+
         context.fillStyle = "rgb(0,0,0)";
-        context.fillRect(get_size(), canvas.height - get_size(), get_size(), get_size());
 
         window.requestAnimationFrame(ontick);
     }
@@ -24,8 +29,10 @@
 
       context.clearRect(0, 0, canvas.width, canvas.height);
 
-      draw_block(make_block(get_size()));
+      // draw the player
+      draw_block(player_block);
       
+      // draw all incoming blocks
       if(blocks.length === 0) {
         blocks.push(make_block(canvas.width));
       }
@@ -40,7 +47,9 @@
       });
       blocks = new_blocks;
 
-      window.requestAnimationFrame(ontick);
+      if(pause === false) {
+        window.requestAnimationFrame(ontick);
+      }
     }
 
     function draw_block(block) {
@@ -57,6 +66,10 @@
     function get_size() {
       var canvas = document.getElementById("game");
       return canvas.height / 10;
+    }
+
+    function jump() {
+
     }
 
     </script>
