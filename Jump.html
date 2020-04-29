@@ -8,6 +8,7 @@
     var blocks = [];
     
     var pause = true;
+    var game_over = false;
 
     function draw() {
         var canvas = document.getElementById("game");
@@ -17,7 +18,9 @@
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
-        player_block = {x: get_size(), y: canvas.height - get_size(), width: get_size(), height: get_size()};
+        // player_block = {x: get_size(), y: canvas.height - get_size(), width: get_size(), height: get_size()};
+        player_block = {x: canvas.width / 2, y: canvas.height - get_size(), width: get_size(), height: get_size()};
+
 
         context.fillStyle = "rgb(0,0,0)";
 
@@ -31,19 +34,28 @@
       context.clearRect(0, 0, canvas.width, canvas.height);
 
       // draw the player
+      context.fillStyle = "rgb(0,0,0)";
       draw_block(player_block);
       
+      context.fillStyle = "rgb(200,0,0)";
       // draw all incoming blocks
       if(blocks.length === 0) {
         blocks.push(make_block(canvas.width));
       }
 
-      blocks.forEach(block => draw_block(block));
+      blocks.forEach(block => {
+        if(player_hit(block)) {
+          end_game();
+          console.log("hit");
+        } else {
+          draw_block(block);
+        }
+        });
 
       var new_blocks = []
       blocks.forEach(block => {
-        if (block.x + get_size() > 0) {
-          new_blocks.push(make_block(block.x - 1));
+        if (!block_outside_canvas(block)) {
+          new_blocks.push(make_block(block.x + 1));
         }
       });
       blocks = new_blocks;
@@ -55,7 +67,6 @@
 
     function draw_block(block) {
       var context = document.getElementById("game").getContext("2d");
-      console.log(block.x);
       context.fillRect(block.x, block.y, block.width, block.height);
     }
 
@@ -74,12 +85,56 @@
       player_block = {x: old_block.x, y: old_block.y - 1, width: old_block.width, height: old_block.height};
     }
 
+    function end_game() {
+      pause = true;
+      game_over = true;
+      console.log("Game Over");
+      console.log(player_block);
+      console.log(blocks);
+    }
+
+    function player_hit(block) {
+      let player_corners = get_corners(player_block);
+      // let block_corners = get_corners(block);
+      player_corners.forEach(corner => {
+        if(corner_in_block(corner, block)) {
+          end_game();
+        }
+      });
+
+      return false;
+    }
+
+    function get_corners(block) {
+      return [[block.x, block.y],
+       [block.x + block.width, block.y],
+       [block.x, block.y + block.height],
+       [block.x + block.width, block.y + block.height]];
+    }
+
+    function corner_in_block(corner, block) {
+      // console.log(corner[0], block.x);
+      // console.log(corner[0], block.x + block.width);
+      // console.log(corner[1] >= block.y);
+      // console.log(corner[1] <= block.y + block.height);
+
+      return corner[0] >= block.x && corner[0] <= block.x + block.width
+      && corner[1] >= block.y && corner[1] <= block.y + block.height;
+    }
+
+    function block_outside_canvas(block) {
+      var canvas = document.getElementById("game");
+
+      return block.x + block.width < 0 || block.x - block.width > canvas.width
+      || block.y - block.height < 0 || block.y + block.height > canvas.height;
+    }
+
     function handle_key(event) {
       let key = event.key;
       switch (key) {
         case " ":
           pause = !pause;
-          if(!pause) {
+          if(!pause && !game_over) {
             ontick();
           }
           break;
