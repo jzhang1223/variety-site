@@ -2,7 +2,6 @@
 
 function draw() {
   setup();
-  console.log("Started");
 }
 
 function setup() {
@@ -12,12 +11,19 @@ function setup() {
   canvas.width = window.innerWidth - 2;
   canvas.height = window.innerHeight - 2;
 
-  console.log(canvas.width);
-  console.log(canvas.height);
-
   game = new TetrisGame(10, 24, canvas);
 
+  document.addEventListener("keydown", game.handle_key);
+
   game.draw_board();
+  ontick();
+}
+
+function ontick() {
+  game.ontick();
+  if(!game.paused) {
+    window.requestAnimationFrame(ontick);
+  }
 }
 
 class TetrisGame {
@@ -29,9 +35,13 @@ class TetrisGame {
     this.board = new Array(this.width);
     for(var i = 0; i < this.height; i++) {
       this.board[i] = new Array(height);
+      this.board[i].fill(0);
     }
 
     this.block_size = canvas.height / this.height;
+
+    this.paused = false;
+    this.current_piece = [];
   }
 
   print_board() {
@@ -43,6 +53,11 @@ class TetrisGame {
   }
 
   draw_board() {
+    // add pieces to the board first
+    var canvas = document.getElementById("tetris");
+    var context = canvas.getContext("2d");
+    context.clearRect(0, 0, canvas.width, canvas.height);
+
     for(var i = 0; i < this.width; i++) {
       for(var j = 2; j < this.height; j++) {
         this.draw_block({x: i, y: j, value: this.board[i][j]});
@@ -56,18 +71,101 @@ class TetrisGame {
 
     let offset = (canvas.width - (this.block_size * this.width)) / 2;
 
-    if(block.value === undefined) {
+    if(block.value === 0) {
       context.beginPath();
       context.rect(block.x * this.block_size + offset, block.y * this.block_size, this.block_size, this.block_size);
-      context.fillText(block.y, block.x * this.block_size + offset, block.y * this.block_size + this.block_size, this.block_size);
+      context.fillText("(" + block.x + ", " + block.y + ")", block.x * this.block_size + offset, block.y * this.block_size + this.block_size, this.block_size);
       context.stroke();
     }
+    else if(block.value === 1) {
+      context.fillRect(block.x * this.block_size + offset, block.y * this.block_size, this.block_size, this.block_size);
+    }
   }
+
+  spawn_tetromino(tetromino) {
+    let base = make_coordinate(3, 0);
+    var result = [];
+    for(var i = 0; i < tetromino.coordinates.length; i++) {
+      result.push(make_coordinate(base.x + tetromino.coordinates[i].x, base.y + tetromino.coordinates[i].y));
+    }
+    
+    this.current_piece = result
+  }
+
+  ontick() {
+    // check can move current piece
+    if(this.can_move(direction.DOWN)) {
+      this.move(direction.DOWN);
+    } else {
+      this.spawn_tetromino(Tetromino.generate_tetromino());
+    }
+    this.draw_board();
+  }
+
+  can_move(direction) {
+    if(this.current_piece.length === 0) {
+      return false;
+    }
+    switch(direction) {
+      case direction.UP:
+        break;
+      case "DOWN":
+        for(var i = 0; i < this.current_piece.length; i++) {
+          // if the board at position (x, y+1) is not taken by 1
+          let piece = this.current_piece[i]
+          if(this.board[piece.x][piece.y + 1] === 1) {
+            return false;
+          }
+        }
+        return true;
+      case direction.LEFT:
+        break;
+      case direction.RIGHT:
+        break;
+      default:
+        console.log("INVALID DIRECTION GIVEN");
+        console.log(direction);
+    }
+  }
+
+  move() {
+    var result = []
+    this.current_piece.forEach(piece => {result.push(make_coordinate(piece.x, piece.y + 1))})
+    this.current_piece = result;
+  }
+
+  handle_key(event) {
+    console.log(event);
+    let key = event.key
+    switch(key) {
+      case "p":
+        game.pause();
+        break;
+      default:
+        console.log(key);
+    }
+  }
+
+  pause() {
+    this.paused = !this.paused;
+    if(!this.paused) {
+      ontick();
+    }
+  }
+  
+}
+
+const direction = {
+  UP: "UP",
+  DOWN: "DOWN",
+  LEFT: "LEFT",
+  RIGHT: "RIGHT"
 }
 
 class Tetromino {
 
   constructor(shape) {
+    console.log(shape);
     switch(shape) {
       case shapes.I:
         this.squares = [3, 5, 6];
@@ -96,6 +194,28 @@ class Tetromino {
 
     this.coordinates = make_coordinate_list(this.squares);
   }
+
+  static generate_tetromino() {
+    let random_shape = Math.floor(Math.random() * 7);
+    switch (random_shape) {
+      case 0:
+        return new Tetromino(shapes.I);
+      case 1:
+        return new Tetromino(shapes.J);
+      case 2:
+        return new Tetromino(shapes.L);
+      case 3:
+        return new Tetromino(shapes.O);
+      case 4:
+        return new Tetromino(shapes.S);
+      case 5:
+        return new Tetromino(shapes.Z);
+      case 6:
+        return new Tetromino(shapes.T);
+      default:
+        console.log("INVALID TETROMINO GENERATED");
+    }
+  }
 }
 
 const shapes = {
@@ -112,11 +232,12 @@ function make_coordinate_list(coordinates) {
   var result = [make_coordinate(1,1)];
   for(var i = 0; i < coordinates.length; i++) {
     if(coordinates[i] < 3) {
-      result.append(make_coordinate(coordinates[i], 0));
+      result.push(make_coordinate(coordinates[i], 0));
     } else {
-      result.append(make_coordinate(coordinates[i] - 3, 1))
+      result.push(make_coordinate(coordinates[i] - 3, 1))
     }
   }
+  return result;
 }
 
 function make_coordinate(x, y) {
