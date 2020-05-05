@@ -34,13 +34,13 @@ class TetrisGame {
     this.height = height + 2;
     this.board = new Array(this.width);
     for(var i = 0; i < this.height; i++) {
-      this.board[i] = new Array(height);
+      this.board[i] = new Array(this.height);
       this.board[i].fill(0);
     }
 
     this.block_size = canvas.height / this.height;
 
-    this.paused = false;
+    this.paused = true;
     this.current_piece = [];
   }
 
@@ -72,12 +72,17 @@ class TetrisGame {
     let offset = (canvas.width - (this.block_size * this.width)) / 2;
 
     if(block.value === 0) {
+      context.fillStyle = "rgb(0,0,0)";
       context.beginPath();
       context.rect(block.x * this.block_size + offset, block.y * this.block_size, this.block_size, this.block_size);
       context.fillText("(" + block.x + ", " + block.y + ")", block.x * this.block_size + offset, block.y * this.block_size + this.block_size, this.block_size);
       context.stroke();
     }
     else if(block.value === 1) {
+      context.fillRect(block.x * this.block_size + offset, block.y * this.block_size, this.block_size, this.block_size);
+    }
+    else if(block.value === 2) {
+      context.fillStyle = "rgb(255,0,0)";
       context.fillRect(block.x * this.block_size + offset, block.y * this.block_size, this.block_size, this.block_size);
     }
   }
@@ -88,7 +93,6 @@ class TetrisGame {
     for(var i = 0; i < tetromino.coordinates.length; i++) {
       result.push(make_coordinate(base.x + tetromino.coordinates[i].x, base.y + tetromino.coordinates[i].y));
     }
-    
     this.current_piece = result
   }
 
@@ -97,6 +101,7 @@ class TetrisGame {
     if(this.can_move(direction.DOWN)) {
       this.move(direction.DOWN);
     } else {
+      this.current_piece.forEach(piece => {this.board[piece.x][piece.y] = 1});
       this.spawn_tetromino(Tetromino.generate_tetromino());
     }
     this.draw_board();
@@ -113,7 +118,9 @@ class TetrisGame {
         for(var i = 0; i < this.current_piece.length; i++) {
           // if the board at position (x, y+1) is not taken by 1
           let piece = this.current_piece[i]
-          if(this.board[piece.x][piece.y + 1] === 1) {
+          console.log(this.out_of_bounds(make_coordinate(piece.x, piece.y + 1)));
+          console.log(this.board[piece.x][piece.y + 1]);
+          if(this.out_of_bounds(make_coordinate(piece.x, piece.y + 1)) || this.board[piece.x][piece.y + 1] === 1) {
             return false;
           }
         }
@@ -128,18 +135,32 @@ class TetrisGame {
     }
   }
 
+  out_of_bounds(coordinates) {
+    return coordinates.x < 0 || coordinates.x >= this.width || coordinates.y < 0 || coordinates.y >= this.height;
+  }
+
   move() {
     var result = []
     this.current_piece.forEach(piece => {result.push(make_coordinate(piece.x, piece.y + 1))})
     this.current_piece = result;
+    for(var i = 0; i < this.width; i++) {
+      for(var j = this.height - 1; j >= 0; j--) {
+        if(this.board[i][j] === 2) {
+          this.board[i][j] = 0;
+        }
+      }
+    }
+    this.current_piece.forEach(piece => {this.board[piece.x][piece.y] = 2});
   }
 
   handle_key(event) {
-    console.log(event);
     let key = event.key
     switch(key) {
       case "p":
         game.pause();
+        break;
+      case "f":
+        window.requestAnimationFrame(ontick);
         break;
       default:
         console.log(key);
@@ -152,7 +173,7 @@ class TetrisGame {
       ontick();
     }
   }
-  
+
 }
 
 const direction = {
