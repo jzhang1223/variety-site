@@ -6,7 +6,6 @@ function draw() {
 
 function setup() {
   var canvas = document.getElementById("tetris");
-  var context = canvas.getContext("2d");
 
   canvas.width = window.innerWidth - 2;
   canvas.height = window.innerHeight - 2;
@@ -97,11 +96,15 @@ class TetrisGame {
   }
 
   ontick() {
-    // check can move current piece
     if(this.can_move(direction.DOWN)) {
       this.move(direction.DOWN);
-    } else {
+    } 
+    // TODO: check for loss state
+      // call game over in that case
+    
+    else {
       this.current_piece.forEach(piece => {this.board[piece.x][piece.y] = 1});
+      // TODO: check for full row and delete it
       this.spawn_tetromino(Tetromino.generate_tetromino());
     }
     this.draw_board();
@@ -111,28 +114,29 @@ class TetrisGame {
     if(this.current_piece.length === 0) {
       return false;
     }
-    switch(direction) {
-      case direction.UP:
-        break;
-      case "DOWN":
-        for(var i = 0; i < this.current_piece.length; i++) {
-          // if the board at position (x, y+1) is not taken by 1
-          let piece = this.current_piece[i]
-          console.log(this.out_of_bounds(make_coordinate(piece.x, piece.y + 1)));
-          console.log(this.board[piece.x][piece.y + 1]);
-          if(this.out_of_bounds(make_coordinate(piece.x, piece.y + 1)) || this.board[piece.x][piece.y + 1] === 1) {
+    for(var i = 0; i < this.current_piece.length; i++) {
+      // Set and call function immediately, similar to computed property
+      let current_block = (() => {
+        switch(direction) {
+          case "UP":
             return false;
-          }
+          case "DOWN":
+            return make_coordinate(this.current_piece[i].x, this.current_piece[i].y + 1);
+          case "LEFT":
+            return make_coordinate(this.current_piece[i].x - 1, this.current_piece[i].y);
+          case "RIGHT":
+            return make_coordinate(this.current_piece[i].x + 1, this.current_piece[i].y);
+          default:
+            console.log("INVALID DIRECTION GIVEN");
+            console.log(direction);
         }
-        return true;
-      case direction.LEFT:
-        break;
-      case direction.RIGHT:
-        break;
-      default:
-        console.log("INVALID DIRECTION GIVEN");
-        console.log(direction);
+      })();
+
+      if(this.out_of_bounds(current_block) || this.board[current_block.x][current_block.y] === 1) {
+        return false;
+      }
     }
+    return true;
   }
 
   out_of_bounds(coordinates) {
