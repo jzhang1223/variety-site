@@ -115,22 +115,7 @@ class TetrisGame {
       return false;
     }
     for(var i = 0; i < this.current_piece.length; i++) {
-      // Set and call function immediately, similar to computed property
-      let current_block = (() => {
-        switch(direction) {
-          case "UP":
-            return false;
-          case "DOWN":
-            return make_coordinate(this.current_piece[i].x, this.current_piece[i].y + 1);
-          case "LEFT":
-            return make_coordinate(this.current_piece[i].x - 1, this.current_piece[i].y);
-          case "RIGHT":
-            return make_coordinate(this.current_piece[i].x + 1, this.current_piece[i].y);
-          default:
-            console.log("INVALID DIRECTION GIVEN");
-            console.log(direction);
-        }
-      })();
+      let current_block = this.moved_block(this.current_piece[i], direction);
 
       if(this.out_of_bounds(current_block) || this.board[current_block.x][current_block.y] === 1) {
         return false;
@@ -143,10 +128,14 @@ class TetrisGame {
     return coordinates.x < 0 || coordinates.x >= this.width || coordinates.y < 0 || coordinates.y >= this.height;
   }
 
-  move() {
+  move(direction) {
     var result = []
-    this.current_piece.forEach(piece => {result.push(make_coordinate(piece.x, piece.y + 1))})
+    this.current_piece.forEach(block => {
+      let moved_block = this.moved_block(block, direction);
+      result.push(moved_block);
+    })
     this.current_piece = result;
+    // delete previous instances of the active block scanning from the bottom
     for(var i = 0; i < this.width; i++) {
       for(var j = this.height - 1; j >= 0; j--) {
         if(this.board[i][j] === 2) {
@@ -154,7 +143,24 @@ class TetrisGame {
         }
       }
     }
-    this.current_piece.forEach(piece => {this.board[piece.x][piece.y] = 2});
+    this.current_piece.forEach(block => {this.board[block.x][block.y] = 2});
+  }
+
+  // Return the given blocked moved 1 spot in a given direction.
+  moved_block(block, direction) {
+    switch(direction) {
+      case "UP":
+        return make_coordinate(block.x, block.y - 1);
+      case "DOWN":
+        return make_coordinate(block.x, block.y + 1);
+      case "LEFT":
+        return make_coordinate(block.x - 1, block.y);
+      case "RIGHT":
+        return make_coordinate(block.x + 1, block.y);
+      default:
+        console.log("INVALID DIRECTION GIVEN");
+        console.log(direction);
+    }
   }
 
   handle_key(event) {
@@ -164,6 +170,19 @@ class TetrisGame {
         game.pause();
         break;
       case "f":
+        window.requestAnimationFrame(ontick);
+        break;
+      case "ArrowLeft":
+        if (game.can_move(direction.LEFT)) {
+          game.move(direction.LEFT);
+        }
+        break;
+      case "ArrowRight":
+        if (game.can_move(direction.RIGHT)) {
+          game.move(direction.RIGHT);
+        }
+        break;
+      case "ArrowDown":
         window.requestAnimationFrame(ontick);
         break;
       default:
