@@ -20,9 +20,13 @@ function setup() {
 
 function ontick() {
   game.ontick();
-  if(!game.paused) {
-    window.requestAnimationFrame(ontick);
+  if(!game.paused && !game.is_game_over) {
+    setTimeout(() => {window.requestAnimationFrame(ontick);}, 1000);
   }
+}
+
+function paint_board() {
+  game.draw_board();
 }
 
 class TetrisGame {
@@ -40,6 +44,7 @@ class TetrisGame {
     this.block_size = canvas.height / this.height;
 
     this.paused = true;
+    this.is_game_over = false;
     this.current_piece = [];
   }
 
@@ -96,12 +101,15 @@ class TetrisGame {
   }
 
   ontick() {
+    if (this.paused || this.is_game_over) {
+      return;
+    }
     if(this.can_move(direction.DOWN)) {
       this.move(direction.DOWN);
     } 
-    // TODO: check for loss state
-      // call game over in that case
-    
+    else if(!this.on_board()) {
+      this.is_game_over = true;
+    }
     else {
       this.current_piece.forEach(piece => {this.board[piece.x][piece.y] = 1});
       // TODO: check for full row and delete it
@@ -111,7 +119,7 @@ class TetrisGame {
   }
 
   can_move(direction) {
-    if(this.current_piece.length === 0) {
+    if(this.current_piece.length === 0 || this.is_game_over || this.paused) {
       return false;
     }
     for(var i = 0; i < this.current_piece.length; i++) {
@@ -126,6 +134,15 @@ class TetrisGame {
 
   out_of_bounds(coordinates) {
     return coordinates.x < 0 || coordinates.x >= this.width || coordinates.y < 0 || coordinates.y >= this.height;
+  }
+
+  on_board() {
+      for(var i = 0; i < this.current_piece.length; i++) {
+        if(this.current_piece[i].y < 2) {
+          return false;
+        }
+      } 
+      return true;
   }
 
   move(direction) {
@@ -169,21 +186,24 @@ class TetrisGame {
       case "p":
         game.pause();
         break;
+      // potential force advance for debugging purposes?
       case "f":
-        window.requestAnimationFrame(ontick);
+        game.ontick();
         break;
       case "ArrowLeft":
         if (game.can_move(direction.LEFT)) {
           game.move(direction.LEFT);
+          paint_board()
         }
         break;
       case "ArrowRight":
         if (game.can_move(direction.RIGHT)) {
           game.move(direction.RIGHT);
+          window.requestAnimationFrame(paint_board);
         }
         break;
       case "ArrowDown":
-        window.requestAnimationFrame(ontick);
+        game.ontick()
         break;
       default:
         console.log(key);
@@ -197,6 +217,9 @@ class TetrisGame {
     }
   }
 
+  end_game() {
+    this.is_game_over = true;
+  }
 }
 
 const direction = {
