@@ -21,7 +21,7 @@ function setup() {
 function ontick() {
   game.ontick();
   if(!game.paused && !game.is_game_over) {
-    setTimeout(() => {window.requestAnimationFrame(ontick);}, 1000);
+    setTimeout(() => {window.requestAnimationFrame(ontick);}, 50);
   }
 }
 
@@ -36,7 +36,7 @@ class TetrisGame {
     // Add 2 invisible rows for spawning tetromino
     this.height = height + 2;
     this.board = new Array(this.width);
-    for(var i = 0; i < this.height; i++) {
+    for(var i = 0; i < this.width; i++) {
       this.board[i] = new Array(this.height);
       this.board[i].fill(0);
     }
@@ -113,8 +113,26 @@ class TetrisGame {
     else {
       this.current_piece.forEach(piece => {this.board[piece.x][piece.y] = 1});
       // TODO: check for full row and delete it
+      let rows_to_be_cleared = this.should_clear_rows();
+      if(rows_to_be_cleared.length > 0) {
+        rows_to_be_cleared.forEach(index => {this.clear_row(index)});
+
+        // shift some rows down
+        var num_rows = 0;
+        let lowest_row = Math.max(...rows_to_be_cleared);
+        for(var i = lowest_row; i > 1; i--) {
+          if(rows_to_be_cleared.includes(i)) {
+            num_rows++;
+          }
+          console.log("Shifting: " + i + ", " + num_rows);
+          console.log(rows_to_be_cleared);
+          this.shift_blocks_down(i, num_rows);
+        }
+
+      }
       this.spawn_tetromino(Tetromino.generate_tetromino());
     }
+    //
     this.draw_board();
   }
 
@@ -180,6 +198,37 @@ class TetrisGame {
     }
   }
 
+  should_clear_rows() {
+    var result = []
+    for(var j = 0; j < this.height; j++) {
+      var should_clear = true;
+      for(var i = 0; i < this.width; i++) {
+        if(this.board[i][j] === 0) {
+          should_clear = false;
+        }
+      }
+      if(should_clear === true) {
+        result.push(j);
+      }
+    }
+    return result;
+  }
+
+  clear_row(index) {
+    for(var i = 0; i < this.width; i++) {
+      this.board[i][index] = 0;
+    }
+  }
+
+  shift_blocks_down(starting_index, num_rows) {
+    for(var j = starting_index; j > 1; j--) {
+      for(var i = 0; i < this.width; i++) {
+      // no need to shift from hidden rows
+        this.board[i][j] = this.board[i][j-num_rows];
+      }
+    }
+  }
+
   handle_key(event) {
     let key = event.key
     switch(key) {
@@ -193,13 +242,13 @@ class TetrisGame {
       case "ArrowLeft":
         if (game.can_move(direction.LEFT)) {
           game.move(direction.LEFT);
-          paint_board()
+          game.draw_board();
         }
         break;
       case "ArrowRight":
         if (game.can_move(direction.RIGHT)) {
           game.move(direction.RIGHT);
-          window.requestAnimationFrame(paint_board);
+          game.draw_board();
         }
         break;
       case "ArrowDown":
@@ -263,6 +312,7 @@ class Tetromino {
   }
 
   static generate_tetromino() {
+    return new Tetromino(shapes.O);
     let random_shape = Math.floor(Math.random() * 7);
     switch (random_shape) {
       case 0:
