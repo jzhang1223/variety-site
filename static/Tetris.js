@@ -312,7 +312,7 @@ class Tetromino {
   }
 
   static generate_tetromino() {
-    return new Tetromino(shapes.O);
+    // return new Tetromino(shapes.O);
     let random_shape = Math.floor(Math.random() * 7);
     switch (random_shape) {
       case 0:
