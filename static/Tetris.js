@@ -55,7 +55,6 @@ class TetrisGame {
   }
 
   draw_board() {
-    // add pieces to the board first
     var canvas = document.getElementById("tetris");
     var context = canvas.getContext("2d");
     context.clearRect(0, 0, canvas.width, canvas.height);
