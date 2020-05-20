@@ -7,7 +7,7 @@ function draw() {
 function setup() {
   var canvas = document.getElementById("tetris");
 
-  canvas.width = window.innerWidth - 2;
+  canvas.width = window.innerWidth - 20;
   canvas.height = window.innerHeight - 2;
 
   game = new TetrisGame(10, 24, canvas);

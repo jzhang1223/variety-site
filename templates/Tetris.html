@@ -3,15 +3,18 @@
 {% block head %}
 <script type="text/javascript" src="{{ url_for('static', filename='Tetris.js') }}"></script>
 <script type="text/javascript">
-  window.onload = () => {console.log(document.body.onload = draw());}
+  console.log("loaded");
+  window.onload = () => {
+    document.body.onload = draw();
+    document.body.onresize = draw();
+    }
+
 </script>
 <style type="text/css">
-  canvas {
-    border: 1px black solid;
-  }
-
   body {
     margin: 0px;
+    width: 100%;
+    height: 100%;
   }
 </style>
 {% endblock %}
