@@ -1,19 +1,16 @@
 function start() {
   setup();
+  ontick();
 }
 
 function setup() {
   var canvas = document.getElementById("tetris");
-
-  canvas.width = window.innerWidth - 20;
-  canvas.height = window.innerHeight - 2;
 
   game = new TetrisGame(10, 24, canvas);
 
   document.addEventListener("keydown", game.handle_key);
 
   game.draw_board();
-  ontick();
 }
 
 function ontick() {
@@ -30,16 +27,16 @@ function paint_board() {
 class TetrisGame {
 
   constructor(width, height, canvas) {
+    // width of game board in blocks
     this.width = width;
     // Add 2 invisible rows for spawning tetromino
+    // width of game board in blocks
     this.height = height + 2;
     this.board = new Array(this.width);
     for(var i = 0; i < this.width; i++) {
       this.board[i] = new Array(this.height);
       this.board[i].fill(0);
     }
-
-    this.block_size = canvas.height / this.height;
 
     this.paused = true;
     this.is_game_over = false;
@@ -57,6 +54,10 @@ class TetrisGame {
   draw_board() {
     var canvas = document.getElementById("tetris");
     var context = canvas.getContext("2d");
+    canvas.width = window.innerWidth - 20;
+    canvas.height = window.innerHeight - 2;
+    this.block_size = canvas.height / this.height;
+
     context.clearRect(0, 0, canvas.width, canvas.height);
 
     for(var i = 0; i < this.width; i++) {
