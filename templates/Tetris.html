@@ -4,10 +4,8 @@
 <script type="text/javascript" src="{{ url_for('static', filename='Tetris.js') }}"></script>
 <script type="text/javascript">
   console.log("loaded");
-  window.onload = () => {
-    document.body.onload = draw();
-    document.body.onresize = () => { paint_board(); };
-    }
+  window.onload = start;
+  window.onresize = paint_board;
 
 </script>
 <style type="text/css">

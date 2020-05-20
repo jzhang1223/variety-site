@@ -1,6 +1,4 @@
-
-
-function draw() {
+function start() {
   setup();
 }
 
