@@ -6,7 +6,7 @@
   console.log("loaded");
   window.onload = () => {
     document.body.onload = draw();
-    document.body.onresize = draw();
+    document.body.onresize = () => { paint_board(); };
     }
 
 </script>
