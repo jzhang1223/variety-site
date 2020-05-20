@@ -16,7 +16,7 @@ function setup() {
 function ontick() {
   game.ontick();
   if(!game.paused && !game.is_game_over) {
-    setTimeout(() => {window.requestAnimationFrame(ontick);}, 50);
+    setTimeout(() => {window.requestAnimationFrame(ontick);}, 200);
   }
 }
 
