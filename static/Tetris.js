@@ -96,12 +96,16 @@ class TetrisGame {
     for(var i = 0; i < tetromino.coordinates.length; i++) {
       coordinates.push(make_coordinate(base.x + tetromino.coordinates[i].x, base.y + tetromino.coordinates[i].y));
     }
-    this.current_piece = {direction: direction.UP, shape: tetromino.shape, coordinates: coordinates}
+    this.current_piece = {
+      direction: direction.UP,
+      shape: tetromino.shape, 
+      coordinates: coordinates, 
+      center: make_coordinate(4,1)}
   }
 
   ontick() {
     console.log(this.current_piece);
-    if (this.paused || this.is_game_over) {
+    if(this.paused || this.is_game_over) {
       return;
     }
     if(this.can_move(direction.DOWN)) {
@@ -166,6 +170,49 @@ class TetrisGame {
       }
     }
     this.current_piece.coordinates.forEach(block => {this.board[block.x][block.y] = 2});
+    this.current_piece.center = this.moved_block(this.current_piece.center, direction);
+  }
+
+  can_rotate() {
+    let next_rotation = this.get_rotation()
+    for(var i = 0; i < next_rotation.length; i++) {
+      let next_x = next_rotation[i].x;
+      let next_y = next_rotation[i].y;
+      if(this.out_of_bounds(next_rotation[i]) || this.board[next_x][next_y] === 1) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  rotate_piece() {
+    console.log(this.get_rotation());
+    this.current_piece.coordinates = this.get_rotation();
+  }
+
+  get_rotation() {
+    var result = [];
+    if(this.current_piece.shape === shapes.I) {
+      return this.current_piece.coordinates;
+    } else if(this.current_piece.shape !== shapes.O) {
+      this.current_piece.coordinates.forEach(coordinate => {
+
+        // cos 90 = 0
+        // sin 90 = 1
+        // x1 = (x0 - xc)cos(90)-(y0 - yc)sin(90) + xc
+        // y1 = (x0 - xc)sin(90)+(y0 - yc)cos(90) + yc
+
+        let xc = this.current_piece.center.x;
+        let yc = this.current_piece.center.y;
+        let x1 = (coordinate.x - xc) * 0 - (coordinate.y - yc) * 1 + xc;
+        let y1 = (coordinate.x - xc) * 1 + (coordinate.y - yc) * 0 + yc;
+
+        result.push(make_coordinate(x1, y1));
+      })
+    } else {
+      return this.current_piece.coordinates;
+    }
+    return result;
   }
 
   // Return the given blocked moved 1 spot in a given direction.
@@ -229,13 +276,13 @@ class TetrisGame {
         game.paused = true;
         break;
       case "ArrowLeft":
-        if (game.can_move(direction.LEFT)) {
+        if(game.can_move(direction.LEFT)) {
           game.move(direction.LEFT);
           game.draw_board();
         }
         break;
       case "ArrowRight":
-        if (game.can_move(direction.RIGHT)) {
+        if(game.can_move(direction.RIGHT)) {
           game.move(direction.RIGHT);
           game.draw_board();
         }
@@ -243,8 +290,11 @@ class TetrisGame {
       case "ArrowDown":
         game.ontick()
         break;
-      case "ArrowUp":
-        game.rotate_piece()
+      case "c":
+        if(game.can_rotate()) {
+          game.rotate_piece();
+          game.draw_board();
+        }
         break;
       default:
         console.log(key);
