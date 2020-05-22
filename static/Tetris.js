@@ -40,7 +40,7 @@ class TetrisGame {
 
     this.paused = true;
     this.is_game_over = false;
-    this.current_piece = [];
+    this.spawn_tetromino(Tetromino.generate_tetromino());
   }
 
   print_board() {
@@ -92,14 +92,15 @@ class TetrisGame {
 
   spawn_tetromino(tetromino) {
     let base = make_coordinate(3, 0);
-    var result = [];
+    var coordinates = [];
     for(var i = 0; i < tetromino.coordinates.length; i++) {
-      result.push(make_coordinate(base.x + tetromino.coordinates[i].x, base.y + tetromino.coordinates[i].y));
+      coordinates.push(make_coordinate(base.x + tetromino.coordinates[i].x, base.y + tetromino.coordinates[i].y));
     }
-    this.current_piece = result
+    this.current_piece = {direction: direction.UP, shape: tetromino.shape, coordinates: coordinates}
   }
 
   ontick() {
+    console.log(this.current_piece);
     if (this.paused || this.is_game_over) {
       return;
     }
@@ -110,7 +111,7 @@ class TetrisGame {
       this.is_game_over = true;
     }
     else {
-      this.current_piece.forEach(piece => {this.board[piece.x][piece.y] = 1});
+      this.current_piece.coordinates.forEach(piece => {this.board[piece.x][piece.y] = 1});
       // TODO: check for full row and delete it
       let rows_to_be_cleared = this.get_rows_to_clear();
       if(rows_to_be_cleared.length > 0) {
@@ -123,11 +124,11 @@ class TetrisGame {
   }
 
   can_move(direction) {
-    if(this.current_piece.length === 0 || this.is_game_over || this.paused) {
+    if(this.current_piece.shape == null || this.is_game_over || this.paused) {
       return false;
     }
-    for(var i = 0; i < this.current_piece.length; i++) {
-      let current_block = this.moved_block(this.current_piece[i], direction);
+    for(var i = 0; i < this.current_piece.coordinates.length; i++) {
+      let current_block = this.moved_block(this.current_piece.coordinates[i], direction);
 
       if(this.out_of_bounds(current_block) || this.board[current_block.x][current_block.y] === 1) {
         return false;
@@ -141,8 +142,8 @@ class TetrisGame {
   }
 
   on_board() {
-      for(var i = 0; i < this.current_piece.length; i++) {
-        if(this.current_piece[i].y < 2) {
+      for(var i = 0; i < this.current_piece.coordinates.length; i++) {
+        if(this.current_piece.coordinates[i].y < 2) {
           return false;
         }
       } 
@@ -151,11 +152,11 @@ class TetrisGame {
 
   move(direction) {
     var result = []
-    this.current_piece.forEach(block => {
+    this.current_piece.coordinates.forEach(block => {
       let moved_block = this.moved_block(block, direction);
       result.push(moved_block);
     })
-    this.current_piece = result;
+    this.current_piece.coordinates = result;
     // delete previous instances of the active block scanning from the bottom
     for(var i = 0; i < this.width; i++) {
       for(var j = this.height - 1; j >= 0; j--) {
@@ -164,7 +165,7 @@ class TetrisGame {
         }
       }
     }
-    this.current_piece.forEach(block => {this.board[block.x][block.y] = 2});
+    this.current_piece.coordinates.forEach(block => {this.board[block.x][block.y] = 2});
   }
 
   // Return the given blocked moved 1 spot in a given direction.
@@ -242,9 +243,9 @@ class TetrisGame {
       case "ArrowDown":
         game.ontick()
         break;
-      // case "ArrowUp":
-      //   game.rotate_piece()
-      //   break;
+      case "ArrowUp":
+        game.rotate_piece()
+        break;
       default:
         console.log(key);
     }
@@ -298,6 +299,7 @@ class Tetromino {
         console.log("INVALID SHAPE GIVEN");
     }
 
+    this.shape = shape
     this.coordinates = make_coordinate_list(this.squares);
   }
 
