@@ -111,26 +111,13 @@ class TetrisGame {
     else {
       this.current_piece.forEach(piece => {this.board[piece.x][piece.y] = 1});
       // TODO: check for full row and delete it
-      let rows_to_be_cleared = this.should_clear_rows();
+      let rows_to_be_cleared = this.get_rows_to_clear();
       if(rows_to_be_cleared.length > 0) {
         rows_to_be_cleared.forEach(index => {this.clear_row(index)});
-
-        // shift some rows down
-        var num_rows = 0;
-        let lowest_row = Math.max(...rows_to_be_cleared);
-        for(var i = lowest_row; i > 1; i--) {
-          if(rows_to_be_cleared.includes(i)) {
-            num_rows++;
-          }
-          console.log("Shifting: " + i + ", " + num_rows);
-          console.log(rows_to_be_cleared);
-          this.shift_blocks_down(i, num_rows);
-        }
-
+        rows_to_be_cleared.forEach(index => {this.shift_blocks_down(index, 1)});
       }
       this.spawn_tetromino(Tetromino.generate_tetromino());
     }
-    //
     this.draw_board();
   }
 
@@ -196,7 +183,7 @@ class TetrisGame {
     }
   }
 
-  should_clear_rows() {
+  get_rows_to_clear() {
     var result = []
     for(var j = 0; j < this.height; j++) {
       var should_clear = true;
@@ -279,7 +266,6 @@ const direction = {
 class Tetromino {
 
   constructor(shape) {
-    console.log(shape);
     switch(shape) {
       case shapes.I:
         this.squares = [3, 5, 6];
