@@ -190,11 +190,19 @@ class TetrisGame {
     this.current_piece.coordinates = this.get_rotation();
   }
 
+  // Using https://vignette.wikia.nocookie.net/tetrisconcept/images/3/3d/SRS-pieces.png/revision/latest?cb=20060626173148
   get_rotation() {
-    var result = [];
-    if(this.current_piece.shape === shapes.I) {
-      return this.current_piece.coordinates;
-    } else if(this.current_piece.shape !== shapes.O) {
+    if(this.current_piece.shape !== shapes.O) {
+      var result = [];
+      let xc = this.current_piece.center.x;
+      let yc = this.current_piece.center.y;
+
+      // use the halfway point as the center
+      if(this.current_piece.shape === shapes.I) {
+        xc += 0.5;
+        yc += 0.5;
+      }
+
       this.current_piece.coordinates.forEach(coordinate => {
 
         // cos 90 = 0
@@ -202,17 +210,15 @@ class TetrisGame {
         // x1 = (x0 - xc)cos(90)-(y0 - yc)sin(90) + xc
         // y1 = (x0 - xc)sin(90)+(y0 - yc)cos(90) + yc
 
-        let xc = this.current_piece.center.x;
-        let yc = this.current_piece.center.y;
         let x1 = (coordinate.x - xc) * 0 - (coordinate.y - yc) * 1 + xc;
         let y1 = (coordinate.x - xc) * 1 + (coordinate.y - yc) * 0 + yc;
 
         result.push(make_coordinate(x1, y1));
       })
+      return result;
     } else {
       return this.current_piece.coordinates;
     }
-    return result;
   }
 
   // Return the given blocked moved 1 spot in a given direction.
@@ -354,7 +360,7 @@ class Tetromino {
   }
 
   static generate_tetromino() {
-    // return new Tetromino(shapes.O);
+    // return new Tetromino(shapes.I);
     let random_shape = Math.floor(Math.random() * 7);
     switch (random_shape) {
       case 0:
