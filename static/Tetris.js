@@ -81,6 +81,7 @@ class TetrisGame {
       context.stroke();
     }
     else if(block.value === 1) {
+      context.fillStyle = "rgb(0,0,0)";
       context.fillRect(block.x * this.block_size + offset, block.y * this.block_size, this.block_size, this.block_size);
     }
     else if(block.value === 2) {
@@ -222,7 +223,9 @@ class TetrisGame {
         break;
       // potential force advance for debugging purposes?
       case "f":
+        game.paused = false;
         game.ontick();
+        game.paused = true;
         break;
       case "ArrowLeft":
         if (game.can_move(direction.LEFT)) {
@@ -239,6 +242,9 @@ class TetrisGame {
       case "ArrowDown":
         game.ontick()
         break;
+      // case "ArrowUp":
+      //   game.rotate_piece()
+      //   break;
       default:
         console.log(key);
     }
