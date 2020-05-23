@@ -7,11 +7,11 @@ def hello_world():
 
 @app.route('/tetris')
 def tetris():
-  return render_template('tetris.html', template_folder='templates')
+  return render_template('tetris.html', template_folder='../')
 
-@app.route('/dogVote')
-def dogVote():
-  return render_template('dogVote.html', template_folder='../')
+# @app.route('/dogVote')
+# def dogVote():
+#   return render_template('dogVote.html', template_folder='../')
 
 if __name__ == '__main__':
   app.debug = True
