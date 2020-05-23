@@ -7,7 +7,7 @@ def hello_world():
 
 @app.route('/tetris')
 def tetris():
-  return render_template('Tetris.html', template_folder='../')
+  return render_template('tetris.html', template_folder='../')
 
 if __name__ == '__main__':
   app.debug = True
