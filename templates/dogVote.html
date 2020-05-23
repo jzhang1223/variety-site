@@ -4,6 +4,25 @@
 
 {% block head %}
 <script type="text/javascript" src="{{ url_for('static', filename='dogVote.js') }}"></script>
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='dogVote.css') }}">
 {% endblock %}
 
-{% block content %}{% endblock %}
+{% block content %}
+<div class="card-container">
+  <div class="card" style="width: 18rem;" id="card1">
+    <img class="card-img-top" alt="Card image cap" id="card1-image">
+    <div class="card-body">
+      <h5 class="card-title">Alpha Dog</h5>
+      <!-- <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p> -->
+    </div>
+  </div>
+  <div class="card" style="width: 18rem;" id="card2">
+    <img class="card-img-top" alt="Card image cap" id="card2-image">
+    <div class="card-body">
+      <h5 class="card-title">Doge</h5>
+      <!-- <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p> -->
+      <!-- <a href="#" class="btn btn-primary">Go somewhere</a> -->
+    </div>
+  </div>
+</div>
+{% endblock %}
