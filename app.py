@@ -7,7 +7,7 @@ def hello_world():
 
 @app.route('/tetris')
 def tetris():
-  return render_template('tetris.html', template_folder='../')
+  return render_template('tetris.html')
 
 @app.route('/dogVote')
 def dogVote():
